@@ -5,6 +5,7 @@ library(tidyverse)
 library(DT)
 library(bslib)
 library(gridExtra)
+#library(qs)
 
 
 options(shiny.maxRequestSize = 10 * 1024^3)
@@ -34,7 +35,8 @@ ui <- fluidPage(
       actionButton("evaluate", "Evaluate!", class = "btn-primary"),
       conditionalPanel(
         condition = "input.evaluate > 0",
-        downloadButton("download_RDS", "Download Filtered RDS", class = "btn-success")
+        downloadButton("download_RDS", "Download Filtered Data", class = "btn-success"),
+        downloadButton("download_parameters", "Download Filtering Parameters", class = "btn-success")
       )
     ),
     mainPanel(
@@ -321,6 +323,21 @@ server <- function(input, output) {
     paste0("Considering any of these QC metrics in isolation can lead to misinterpretationof cellular signals. For example, cells with a comparatively high fraction of mitochondrial counts may be involved in respiratory processes and may be cells that you would like to keep. Likewise, other metrics can have other biological interpretations. A general rule of thumb when performing QC is to <b>set thresholds for individual metrics to be as permissive as possible, and always consider the joint effects</b> of these metrics. In this way, you reduce the risk of filtering out any viable cell populations. Two metrics that are often evaluated together are the number of UMIs and the number of genes detected per cell.<br>By plotting the number of UMIs per cell (x-axis) vs. the number of genes per cell (y-axis), we can visually assess whether there is a large proportion of lowquality cells with low read counts and/or gene detection (bottom left quadrant of the plot). In the following representation, cells are further color-coded based on the percentage of mitochondrial genes found among total detected genes.")
   })
   bindEvent(observe({
+    parameters <- reactive({
+      filtering_parameters <- c(paste0("nCount_RNA_cutoff = ", input$UMIs_per_cell_threshold),
+      paste0("nFeature_RNA_cutoff = ", input$nGenes_per_cell_threshold),
+      paste0("mitoRatio_cutoff = ", input$mito_threshold),
+      paste0("riboRatio_cutoff = ", input$ribo_threshold),
+      paste0("Log10GenesPerUMI_cutoff = ", input$Log10GenesPerUMI_threshold))
+    })
+    output$download_parameters <- downloadHandler(
+      filename = function(){
+        "parameters.R"
+      },
+      content = function(file){
+        write(parameters(), file, ncolumns = 1)
+      }
+    )
     filter_seurat <- reactive({
       req(seurat_merge())
       subset(x = seurat_merge(), 
@@ -636,7 +653,7 @@ server <- function(input, output) {
         "filtered_seurat.RDS"
       },
       content = function(file){
-            saveRDS(filter_seurat, file)
+        saveRDS(filter_seurat, file)
       }
     )
     output$download_density_UMIs_raw <- downloadHandler(
