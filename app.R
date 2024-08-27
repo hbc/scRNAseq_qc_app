@@ -28,7 +28,7 @@ ui <- fluidPage(
                   value = 0.2),
       sliderInput("ribo_threshold", "Percent Ribosomal threshold:",
                   min = 0, max = 1,
-                  value = 0),
+                  value = 1),
       sliderInput("Log10GenesPerUMI_threshold", "Log10 Genes Per UMI threshold:",
                   min = 0, max = 1,
                   value = 0.8),
@@ -344,7 +344,7 @@ server <- function(input, output) {
              subset = (nCount_RNA >= isolate(input$UMIs_per_cell_threshold))
              & (nFeature_RNA >= isolate(input$nGenes_per_cell_threshold))
              & (mitoRatio < isolate(input$mito_threshold))
-             & (riboRatio > isolate(input$ribo_threshold))
+             & (riboRatio < isolate(input$ribo_threshold))
              & (Log10GenesPerUMI > isolate(input$Log10GenesPerUMI_threshold))
       )
     })
