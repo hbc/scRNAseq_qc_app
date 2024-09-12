@@ -28,7 +28,7 @@ ui <- fluidPage(
                   value = 0.2),
       sliderInput("ribo_threshold", "Percent Ribosomal threshold:",
                   min = 0, max = 1,
-                  value = 0),
+                  value = 1),
       sliderInput("Log10GenesPerUMI_threshold", "Log10 Genes Per UMI threshold:",
                   min = 0, max = 1,
                   value = 0.8),
